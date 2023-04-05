@@ -1,33 +1,43 @@
 const { QueryType } = require('discord-player');
-
+const { ApplicationCommandOptionType } = require('discord.js');
 module.exports = {
     name: 'play',
-    aliases: ['p', 'graj'],
-    utilisation: '{prefix}graj [Nazwa utworu/URL]',
+    description: "Włącz utwór!",
     voiceChannel: true,
+    options: [
+        {
+            name: 'Wybierz utwór',
+            description: 'To utwór, który chcesz odtworzyć',
+            type: ApplicationCommandOptionType.String,
+            required: true,
+        }
+    ],
 
-    async execute(client, message, args) {
-        if (!args[0]) return message.channel.send(`Wprowadź prawidłowe wyszukiwanie ${message.author}... ❌`);
-
-        const res = await player.search(args.join(' '), {
-            requestedBy: message.member,
+    async execute({ inter }) {
+	await inter.deferReply();
+        const song = inter.options.getString('song');
+        const res = await player.search(song, {
+            requestedBy: inter.member,
             searchEngine: QueryType.AUTO
         });
 
-        if (!res || !res.tracks.length) return message.channel.send(`Nie znaleziono wyników ${message.author}... ❌`);
+        if (!res || !res.tracks.length) return inter.editReply({ content: `❌ ${inter.member} • Nie znaleziono żadnego wyniku!`, ephemeral: true });
 
-        const queue = await player.createQueue(message.guild, {
-            metadata: message.channel
+        const queue = await player.createQueue(inter.guild, {
+            metadata: inter.channel,
+            spotifyBridge: client.config.opt.spotifyBridge,
+            initialVolume: client.config.opt.defaultvolume,
+            leaveOnEnd: client.config.opt.leaveOnEnd
         });
 
         try {
-            if (!queue.connection) await queue.connect(message.member.voice.channel);
+            if (!queue.connection) await queue.connect(inter.member.voice.channel);
         } catch {
-            await player.deleteQueue(message.guild.id);
-            return message.channel.send(`Nie mogę dołączyć do kanału głosowego ${message.author}... ❌`);
+            await player.deleteQueue(inter.guildId);
+            return inter.editReply({ content: `❌ ${inter.member} • Nie mam uprawnień do tego kanału głosowego!`, ephemeral: true});
         }
 
-        await message.channel.send(`Ładowanie ${res.playlist ? 'playlist' : 'track'}... 🎧`);
+       await inter.editReply({ content:`Odtworzonie utwóru ${res.playlist ? 'playlist' : 'track'}... 🎧`});
 
         res.playlist ? queue.addTracks(res.tracks) : queue.addTrack(res.tracks[0]);
 

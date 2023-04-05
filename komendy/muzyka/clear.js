@@ -1,18 +1,17 @@
 module.exports = {
     name: 'clear',
-    aliases: ['wyczysc'],
-    utilisation: '{prefix}wyczysc',
+    description: 'Usuń wszystkie utwory z kolejki',
     voiceChannel: true,
 
-    async execute(client, message) {
-        const queue = player.getQueue(message.guild.id);
+    async execute({ inter }) {
+        const queue = player.getQueue(inter.guildId);
 
-        if (!queue || !queue.playing) return message.channel.send(`Brak aktualnie odtwarzanej muzyki ${message.author}... ❌`);
+        if (!queue || !queue.playing) return inter.reply({ content: `❌ ${inter.member} • Aktualnie nie ma odtworzonego utworu!`, ephemeral: true });
 
-        if (!queue.tracks[0]) return message.channel.send(`Brak muzyki w kolejce po aktualnej ${message.author}... ❌`);
+        if (!queue.tracks[0]) return inter.reply({ content: `❌ ${inter.member} • W kolejce nie ma żadnego utworu!`, ephemeral: true });
 
         await queue.clear();
 
-        message.channel.send(`Kolejka została właśnie wyczyszczona 🗑️`);
+        inter.reply(`Kolejka została właśnie wyczyszczona 🗑️`);
     },
 };

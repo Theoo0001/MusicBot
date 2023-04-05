@@ -1,16 +1,15 @@
 module.exports = {
     name: 'skip',
-    aliases: ['sk', 'pomin'],
-    utilisation: '{prefix}pomin',
+    description: 'Pomiń bierzący utwór',
     voiceChannel: true,
 
-    execute(client, message) {
-        const queue = player.getQueue(message.guild.id);
+    execute({ inter }) {
+        const queue = player.getQueue(inter.guildId);
 
-        if (!queue || !queue.playing) return message.channel.send(`Brak aktualnie odtwarzanej muzyki ${message.author}... ❌`);
+         if (!queue || !queue.playing) return inter.reply({ content:`❌ ${inter.member} • Aktualnie nie odtwarzam żadnego utworu!`, ephemeral: true });
 
         const success = queue.skip();
 
-        return message.channel.send(success ? `Aktualna muzyka ${queue.current.title} została pominięta ✅` : `Wystąpił problem ${message.author}... ❌`);
+        return inter.reply({ content: success ? `Bierzący utwór ${queue.current.title} został przewinięty ✅` : `❌ ${inter.member} • Wystąpił błąd! Spróbuj ponownie?`});
     },
 };

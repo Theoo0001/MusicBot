@@ -1,18 +1,17 @@
 module.exports = {
     name: 'back',
-    aliases: ['poprzedni'],
-    utilisation: '{prefix}poprzedni',
+    description: "Wróć do poprzedniego utworu",
     voiceChannel: true,
 
-    async execute(client, message) {
-        const queue = player.getQueue(message.guild.id);
+    async execute({ inter }) {
+        const queue = player.getQueue(inter.guildId);
 
-        if (!queue || !queue.playing) return message.channel.send(`Brak aktualnie odtwarzanej muzyki ${message.author}... ❌`);
+        if (!queue || !queue.playing) return inter.reply({ content: `❌ ${inter.member} • Brak odtwarzanego utworu!`, ephemeral: true });
 
-        if (!queue.previousTracks[1]) return message.channel.send(`Wcześniej nie grano muzyki ${message.author}... ❌`);
+        if (!queue.previousTracks[1]) return inter.reply({ content: `❌ ${inter.member} • Wcześniej nie odtworzono żadnego utworu!`, ephemeral: true });
 
         await queue.back();
 
-        message.channel.send(`Włączono **poprzedni** utwór ✅`);
+        inter.reply({ content:`Powrócono do **poprzedniego** utworu ✅`});
     },
 };

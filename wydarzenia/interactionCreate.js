@@ -1,17 +1,27 @@
-module.exports = (client, int) => {
-    if (!int.isButton()) return;
+const { EmbedBuilder, InteractionType } = require('discord.js');
 
-    const queue = player.getQueue(int.guildId);
+module.exports = (client, inter) => {
+    if (inter.type === InteractionType.ApplicationCommand) {
+        const DJ = client.config.opt.DJ;
+        const command = client.commands.get(inter.commandName);
 
-    switch (int.customId) {
-        case 'saveTrack': {
-            if (!queue || !queue.playing) return int.reply({ content: `Brak aktualnie odtwarzanej muzyki... ❌`, ephemeral: true, components: [] });
-
-            int.member.send(`Zapisałeś ścieżkę ${queue.current.title} | ${queue.current.author} z serwera ${int.member.guild.name} ✅`).then(() => {
-                return int.reply({ content: `Tytuł muzyki wysłałem Ci w wiadomościach prywatnych ✅`, ephemeral: true, components: [] });
-            }).catch(error => {
-                return int.reply({ content: `Nie można wysłać Ci prywatnej wiadomości... ❌`, ephemeral: true, components: [] });
-            });
+    if (!command) return inter.reply({ embeds: [ new EmbedBuilder().setColor('#ff0000').setDescription('❌ | Wystąpił błąd! Skontaktuj się z developerami!')], ephemeral: true, }), client.slash.delete(inter.commandName)
+    if (command.permissions && !inter.member.permissions.has(command.permissions)) return inter.reply({ embeds: [ new EmbedBuilder().setColor('#ff0000').setDescription(`❌ | Nie posiadasz odpowiednich uprawnień, aby użyć tego polecenia!`)], ephemeral: true, })
+    if (DJ.enabled && DJ.commands.includes(command) && !inter.member._roles.includes(inter.guild.roles.cache.find(x => x.name === DJ.roleName).id)) return inter.reply({ embeds: [ new EmbedBuilder().setColor('#ff0000').setDescription(`❌ | To polecenie jest dostępne tylko i wyłącznie dla użytkowników z \`${DJ.roleName}\` `)], ephemeral: true, })
+    if (command.voiceChannel) {
+            if (!inter.member.voice.channel) return inter.reply({ embeds: [ new EmbedBuilder().setColor('#ff0000').setDescription(`❌ | Nie jesteś na kanale głosowym!`)], ephemeral: true, })
+            if (inter.guild.members.me.voice.channel && inter.member.voice.channel.id !== inter.guild.members.me.voice.channel.id) return inter.reply({ embeds: [ new EmbedBuilder().setColor('#ff0000').setDescription(`❌ | Nie jesteś na tym samym kanale głosowym!`)], ephemeral: true, })
+       }
+        command.execute({ inter, client });
+    }
+    if (inter.type === InteractionType.MessageComponent) {
+        const customId = JSON.parse(inter.customId)
+        const file_of_button = customId.ffb
+        const queue = player.getQueue(inter.guildId);
+        if (file_of_button) {
+            delete require.cache[require.resolve(`../source/DiscordButtons/${file_of_button}.js`)];
+            const button = require(`../source/DiscordButtons/${file_of_button}.js`)
+            if (button) return button({ client, inter, customId, queue });
         }
     }
 };

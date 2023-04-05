@@ -1,16 +1,19 @@
 module.exports = {
     name: 'pause',
-    aliases: ['zatrzymaj'],
-    utilisation: '{prefix}zatrzymaj',
+    description: 'Zatrzymaj utwór',
     voiceChannel: true,
 
-    execute(client, message) {
-        const queue = player.getQueue(message.guild.id);
+    execute({ inter }) {
+        const queue = player.getQueue(inter.guildId);
 
-        if (!queue) return message.channel.send(`${message.author} nie odtwarza obecnie muzyki... ❌`);
+        if (!queue) return inter.reply({ content: `❌ ${inter.member} • Aktualnie żaden utwór nie jest odtwarzany!`, ephemeral: true });
+        
+        if(queue.connection.paused) return inter.reply({content: 'Utwór jest obecnie wstrzymany!', ephemeral: true})
+
+        if(queue.connection.paused) return inter.reply({content: `❌ ${inter.member} • Ten utwór jest (już) obecnie wstrzymany!`, ephemeral: true})
 
         const success = queue.setPaused(true);
-
-        return message.channel.send(success ? `Aktualna muzyka ${queue.current.title} została zatrzymana ✅` : `Wystąpił problem ${message.author}... ❌`);
+        
+        return inter.reply({ content: success ? `Aktualny utwór ${queue.current.title} został zatrzymany ✅` : `❌ ${inter.member} • Wystąpił błąd... Spróbuj ponownie!` });
     },
 };

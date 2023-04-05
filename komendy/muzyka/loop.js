@@ -1,28 +1,51 @@
 const { QueueRepeatMode } = require('discord-player');
+const { ApplicationCommandOptionType } = require('discord.js');
 
 module.exports = {
     name: 'loop',
-    aliases: ['petla'],
-    utilisation: '{prefix}petla <kolejka>',
+    description: 'Włącz & wyłącz zapętlanie (loop) utworów',
     voiceChannel: true,
+    options: [
+        {
+        name: 'Wybierz akcje' ,
+        description: 'Którą akcję chcesz wykonać w pętli?',
+        type: ApplicationCommandOptionType.String,
+        required: true,
+        choices: [
+            { name: 'Kolejka', value: 'enable_loop_queue' },
+            { name: 'Wyłącz', value: 'disable_loop'},
+            { name: 'Utwór', value: 'enable_loop_song' },
+        ],
+    }
+    ],
+    execute({ inter }) {
+        const queue = player.getQueue(inter.guildId);
 
-    execute(client, message, args) {
-        const queue = player.getQueue(message.guild.id);
+        if (!queue || !queue.playing) return inter.reply({ content: `❌ ${inter.member} • Nie odtwarzasz utworu!`, ephemeral: true });
+        switch (inter.options._hoistedOptions.map(x => x.value).toString()) {
+            case 'enable_loop_queue': {
+                if (queue.repeatMode === 1) return inter.reply({ content:`❌ ${inter.member} • Najpierw wyłącz bieżącą muzykę w trybie pętki (/loop)`, ephemeral: true });
 
-        if (!queue || !queue.playing) return message.channel.send(`Brak aktualnie odtwarzanej muzyki ${message.author}... ❌`);
+                const success = queue.setRepeatMode( QueueRepeatMode.QUEUE);
 
-        if (args.join('').toLowerCase() === 'queue') {
-            if (queue.repeatMode === 1) return message.channel.send(`Musisz najpierw wyłączyć bieżącą muzykę w trybie pętli (${client.config.app.px}pętla) ${message.author}... ❌`);
+                return inter.reply({ content:success ? `Tryb powtarzania (loop) został **włączony**... Teraz kolejka będzie odtwarzana w nieskończoność 🔁` : `❌ ${inter.member} • Wystapił błąd... Spróbuj ponownie! ❌` });
+                break
+            }
+            case 'disable_loop': {
+                const success = queue.setRepeatMode(QueueRepeatMode.OFF);
 
-            const success = queue.setRepeatMode(queue.repeatMode === 0 ? QueueRepeatMode.QUEUE : QueueRepeatMode.OFF);
+                return inter.reply({ content:success ? `Tryb powtarzania (loop) został **wyłączony**` : `❌ ${inter.member} • Wystapił błąd... Spróbuj ponownie! ❌` });
+                break
+            }
+            case 'enable_loop_song': {
+                if (queue.repeatMode === 2) return inter.reply({ content:`❌ ${inter.member} • Najpierw wyłącz bieżącą muzykę w trybie pętki (/loop)`, ephemeral: true });
 
-            return message.channel.send(success ? `Tryb powtarzania **${queue.repeatMode === 0 ? 'disabled' : 'enabled'}** cała kolejka będzie się powtarzać w nieskończoność 🔁` : `Coś poszło nie tak ${message.author}... ❌`);
-        } else {
-            if (queue.repeatMode === 2) return message.channel.send(`Musisz najpierw wyłączyć bieżącą kolejkę w trybie pętli (${client.config.app.px}kolejka pętli) ${message.author}... ❌`);
-
-            const success = queue.setRepeatMode(queue.repeatMode === 0 ? QueueRepeatMode.TRACK : QueueRepeatMode.OFF);
-
-            return message.channel.send(success ? `Tryb powtarzania **${queue.repeatMode === 0 ? 'disabled' : 'enabled'}** bieżąca muzyka będzie powtarzana w nieskończoność (kolejkę można zapętlić za pomocą opcji <petla>) 🔂` : `Coś poszło nie tak ${message.author}... ❌`);
-        };
+                const success = queue.setRepeatMode( QueueRepeatMode.TRACK);
+                
+                return inter.reply({ content:success ? `Tryb powtarzania (loop) został **włączony**... Teraz utwór będzie odtwarzana w nieskończoność 🔁` : `❌ ${inter.member} • Wystapił błąd... Spróbuj ponownie! ❌` });
+                break
+            }
+        }
+       
     },
 };

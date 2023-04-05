@@ -1,16 +1,15 @@
 module.exports = {
     name: 'stop',
-    aliases: ['dc', 'zatrzymaj'],
-    utilisation: '{prefix}zatrzymaj',
+    description: 'Zatrzymaj utwór',
     voiceChannel: true,
 
-    execute(client, message) {
-        const queue = player.getQueue(message.guild.id);
+    execute({ inter }) {
+        const queue = player.getQueue(inter.guildId);
 
-        if (!queue || !queue.playing) return message.channel.send(`Brak aktualnie odtwarzanej muzyki ${message.author}... ❌`);
+        if (!queue || !queue.playing) return inter.reply({ content:`❌ ${inter.member} • Aktualnie nie odtwarzam żadnego utworu!`, ephemeral: true });
 
         queue.destroy();
 
-        message.channel.send(`Muzyka zatrzymała się na tym serwerze, do zobaczenia następnym razem ✅`);
+        inter.reply({ content: `Aktualny utwór został zatrzymany! ✅`});
     },
 };

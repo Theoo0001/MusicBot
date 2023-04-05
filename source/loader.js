@@ -2,6 +2,9 @@ const { readdirSync } = require('fs');
 const { Collection } = require('discord.js');
 
 client.commands = new Collection();
+CommandsArray = [];
+
+
 
 const events = readdirSync('./wydarzenia/').filter(file => file.endsWith('.js'));
 
@@ -21,8 +24,16 @@ readdirSync('./komendy/').forEach(dirs => {
 
     for (const file of commands) {
         const command = require(`../komendy/${dirs}/${file}`);
+        if (command.name && command.description) {
+        CommandsArray.push(command);
         console.log(`-> Wczytane polecenie ${command.name.toLowerCase()}`);
         client.commands.set(command.name.toLowerCase(), command);
         delete require.cache[require.resolve(`../komendy/${dirs}/${file}`)];
+        } else console.log(`-> Wystąpił błąd z poleceniem ${command.name.toLowerCase()}`)
     };
 });
+
+client.on('ready', (client) => {
+ if (client.config.app.global) client.application.commands.set(CommandsArray)
+  else client.guilds.cache.get(client.config.app.guild).commands.set(CommandsArray)
+})

@@ -1,16 +1,18 @@
 module.exports = {
     name: 'resume',
-    aliases: ['rs', 'wznow'],
-    utilisation: '{prefix}wznow',
+    description: 'Wznów odtwarzanie utworu',
     voiceChannel: true,
 
-    execute(client, message) {
-        const queue = player.getQueue(message.guild.id);
+    execute({ inter }) {
+        const queue = player.getQueue(inter.guildId);
 
-        if (!queue) return message.channel.send(`Brak aktualnie odtwarzanej muzyki ${message.author}... ❌`);
+        if (!queue) return inter.reply({ content: `❌ ${inter.member} • Aktualnie nie odtwarzam żadnego utworu!`, ephemeral: true });
+        
+
+        if(!queue.connection.paused) return inter.reply({content: `❌ ${inter.member} • Utwór jest już odtwarzany!`, ephemeral: true})
 
         const success = queue.setPaused(false);
-
-        return message.channel.send(success ? `Aktualna muzyka ${queue.current.title} została wznowiona ✅` : `Wystąpił problem ${message.author}... ❌`);
+        
+        return inter.reply({ content:success ? `Bierzący utwór ${queue.current.title} został wznowiony ✅` : `❌ ${inter.member} • Wystąpił błąd! Spróbuj ponownie?`});
     },
 };

@@ -1,26 +1,31 @@
 const maxVol = client.config.opt.maxVol;
+const { ApplicationCommandOptionType } = require('discord.js');
 
 module.exports = {
     name: 'volume',
-    aliases: ['vol', 'glosnosc'],
-    utilisation: `{prefix}glosnosc [1-${maxVol}]`,
+    description: 'Dostosuj regulacje dźwięku',
     voiceChannel: true,
+    options: [
+        {
+            name: 'Głośność',
+            description: 'Wybierz wartość!',
+            type: ApplicationCommandOptionType.Number,
+            required: true,
+            minValue: 1,
+            maxValue: maxVol
+        }
+    ],
 
-    execute(client, message, args) {
-        const queue = player.getQueue(message.guild.id);
+    execute({ inter }) {
+        const queue = player.getQueue(inter.guildId);
 
-        if (!queue || !queue.playing) return message.channel.send(`Brak aktualnie odtwarzanej muzyki ${message.author}... ❌`);
+        if (!queue) return inter.reply({ content: `❌ ${inter.member} • Aktualnie nie odtwarzam żadnego utworu!`, ephemeral: true });
+        const vol = inter.options.getNumber('volume')
 
-        const vol = parseInt(args[0]);
-
-        if (!vol) return message.channel.send(`Obecna głośność to ${queue.volume} 🔊\n*Aby zmienić głośność, wprowadź prawidłową liczbę między **1** do **${maxVol}**.*`);
-
-        if (queue.volume === vol) return message.channel.send(`Głośność, którą chcesz zmienić, jest już aktualna ${message.author}... ❌`);
-
-        if (vol < 0 || vol > maxVol) return message.channel.send(`Podany numer jest nieprawidłowy. Wpisz liczbę od **1** do **${maxVol}** ${message.author}... ❌`);
+        if (queue.volume === vol) return inter.reply({ content: `❌ ${inter.member} • Głośność, którą chcesz zmienić, jest już bieżąca!`, ephemeral: true });
 
         const success = queue.setVolume(vol);
 
-        return message.channel.send(success ? `Głośność została zmieniona do**${vol}**/**${maxVol}**% 🔊` : `Wystąpił problem ${message.author}... ❌`);
+        return inter.reply({ content:success ? `Głośność została zmieniona na **${vol}**/**${maxVol}**% 🔊` : `❌ ${inter.member} • Wystąpił błąd! Spróbuj ponownie?`});
     },
 };

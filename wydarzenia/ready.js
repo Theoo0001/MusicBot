@@ -1,3 +1,3 @@
 module.exports = async (client) => {
-    client.user.setActivity(client.config.app.playing);
+    client.user.setActivity(client.config.app.playing);  
 };
