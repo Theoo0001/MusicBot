@@ -43,19 +43,14 @@ Konfiguracja podstawowa
 - `app/guild`, Na jakim serwerze mają być dostępne komendy? (tylko i wyłącznie gdy `app/global` jest ustawione na false)
 
 
-
 Konfiguracja trybu DJ
 
 - `opt/DJ/enabled`, Czy tryb DJ powinien być aktywny, czy nie 
 - `opt/DJ/roleName`, nazwa roli DJ-a, która ma zostać wykorzystana
 - `opt/DJ/commands`, Lista poleceń ograniczona do członków z rolą DJ-a
 
-Zaawansowana konfiguracja
 
-- `opt/maxVol`, Maksymalna głośność, którą użytkownicy mogą zdefiniować
-- `opt/leaveOnEnd` 
-- `opt/loopMessage`, Czy wiadomość o odtwarzaniu muzyki powinna być wysłana, gdy jest zapętlona
-- `opt/discordPlayer`, Opcje używane przez discord-player
+Zaawansowana konfiguracja
 
 - `opt/maxVol`, Maksymalna głośność, którą użytkownicy mogą zdefiniować
 - `opt/leaveOnEnd`,  Czy bot ma automatycznie opuścić kanał po zakończeniu utworu
